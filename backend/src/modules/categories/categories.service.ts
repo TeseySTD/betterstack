@@ -5,7 +5,18 @@ import { UpdateCategoryDto } from './dto/update-category.dto';
 @Injectable()
 export class CategoriesService {
     private categories = [
-        { id: 1, slug: 'ides', name: 'IDEs', description: 'Integrated Dev Environments' },
+        {
+            id: 1,
+            slug: 'ides',
+            name: 'IDEs & Editors',
+            requiredCriteriaIds: [1, 2]
+        },
+        {
+            id: 2,
+            slug: 'databases',
+            name: 'Database Clients',
+            requiredCriteriaIds: [1, 3]
+        },
     ];
     private nextId = 2;
 
