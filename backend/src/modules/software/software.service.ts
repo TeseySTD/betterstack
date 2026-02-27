@@ -2,51 +2,42 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateSoftwareDto } from './dto/create-software.dto';
 import { UpdateSoftwareDto } from './dto/update-software.dto';
 import { Software } from './entities/software.entity';
+import { SoftwareRepository } from './repositories/software.repository';
+import { OnEvent } from '@nestjs/event-emitter';
 
 @Injectable()
 export class SoftwareService {
-    private softwareList: Software[] = [
-        {
-            id: 1,
-            categoryId: 1,
-            name: 'JetBrains Rider',
-            websiteUrl: 'https://...',
-            features: [{ 1: true }, { 2: 3.2 }]
-        },
-        {
-            id: 2,
-            categoryId: 1,
-            name: 'Visual Studio 2022',
-            websiteUrl: 'https://...',
-            features: [{ 1: false }, { 2: 5.1 }]
-        }
-    ];
-    private nextId = 3;
+    constructor(private readonly repo: SoftwareRepository) { }
 
-    findAll() { return this.softwareList; }
+    findAll() { return this.repo.findAll(); }
 
     findOne(id: number) {
-        const sw = this.softwareList.find(s => s.id === id);
+        const sw = this.repo.findById(id);
         if (!sw) throw new NotFoundException(`Софт з ID ${id} не знайдено`);
         return sw;
     }
 
     create(dto: CreateSoftwareDto) {
-        const newSw = { id: this.nextId++, ...dto };
-        this.softwareList.push(newSw);
-        return newSw;
+        const newSoftware = this.repo.create(dto);
+        return newSoftware;
     }
 
     update(id: number, dto: UpdateSoftwareDto) {
-        const sw = this.findOne(id);
-        Object.assign(sw, dto);
-        return sw;
+        const updatedSoftware = this.repo.update(id, dto);
+        return updatedSoftware;
     }
+    async remove(id: number) {
+        const category = await this.repo.findById(id);
+        if (!category) throw new NotFoundException('Software not found');
 
-    remove(id: number) {
-        const index = this.softwareList.findIndex(s => s.id === id);
-        if (index === -1) throw new NotFoundException(`Софт ${id} не знайдено`);
-        this.softwareList.splice(index, 1);
+        await this.repo.delete(id);
+
         return { success: true };
+    }
+    
+    @OnEvent('category.deleted')
+    async handleCategoryDeletedEvent(payload: { categoryId: number }) {
+        console.log(`[Event] Category ${payload.categoryId} is deleted. Delete connected softwares...`);
+        await this.repo.deleteByCategoryId(payload.categoryId);
     }
 }

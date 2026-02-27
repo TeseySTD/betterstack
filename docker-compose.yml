@@ -1,0 +1,17 @@
+name: "betterstack"
+services:
+  db:
+    container_name: "db"
+    image: "postgres"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "postgres"
+      POSTGRES_DB: "betterstack_db"
+
+volumes:
+  db_data:
+    name: betterstack_db_data
