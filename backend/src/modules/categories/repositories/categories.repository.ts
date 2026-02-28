@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { ArrayContains, Repository } from 'typeorm';
 import { Category } from '../entities/category.entity';
 import { CreateCategoryDto } from '../dto/create-category.dto';
 
@@ -10,7 +10,7 @@ export class CategoriesRepository {
         @InjectRepository(Category)
         private readonly ormRepo: Repository<Category>,
     ) { }
-    
+
     async onModuleInit() {
         const count = await this.ormRepo.count();
         if (count === 0) {
@@ -25,6 +25,11 @@ export class CategoriesRepository {
 
     findAll() { return this.ormRepo.find(); }
     findById(id: number) { return this.ormRepo.findOneBy({ id }); }
+    findWithCriteriaIds(ids: number[]) {
+        return this.ormRepo.find(
+            { where: { requiredCriteriaIds: ArrayContains(ids) } }
+        );
+    }
     create(dto: CreateCategoryDto) { return this.ormRepo.save(dto); }
     update(id: number, dto: any) { return this.ormRepo.update(id, dto); }
     delete(id: number) { return this.ormRepo.delete(id); }

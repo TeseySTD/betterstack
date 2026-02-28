@@ -1,9 +1,9 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateSoftwareDto } from './dto/create-software.dto';
 import { UpdateSoftwareDto } from './dto/update-software.dto';
-import { Software } from './entities/software.entity';
 import { SoftwareRepository } from './repositories/software.repository';
 import { OnEvent } from '@nestjs/event-emitter';
+import { CategoryDeletedEvent } from 'src/common/events/category.events';
 
 @Injectable()
 export class SoftwareService {
@@ -35,8 +35,8 @@ export class SoftwareService {
         return { success: true };
     }
     
-    @OnEvent('category.deleted')
-    async handleCategoryDeletedEvent(payload: { categoryId: number }) {
+    @OnEvent(CategoryDeletedEvent.eventName)
+    async handleCategoryDeletedEvent(payload: CategoryDeletedEvent) {
         console.log(`[Event] Category ${payload.categoryId} is deleted. Delete connected softwares...`);
         await this.repo.deleteByCategoryId(payload.categoryId);
     }

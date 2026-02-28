@@ -2,7 +2,9 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { CategoriesRepository } from './repositories/categories.repository';
-import { EventEmitter2 } from '@nestjs/event-emitter';
+import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
+import { CategoryDeletedEvent } from 'src/common/events/category.events';
+import { CriterionDeletedEvent } from 'src/common/events/criterion.events';
 
 @Injectable()
 export class CategoriesService {
@@ -35,8 +37,21 @@ export class CategoriesService {
 
         await this.repo.delete(id);
 
-        this.eventEmitter.emit('category.deleted', { categoryId: id });
+        this.eventEmitter.emit(CategoryDeletedEvent.eventName, new CategoryDeletedEvent(id));
 
         return { success: true };
+    }
+
+    @OnEvent(CriterionDeletedEvent.eventName)
+    async handleCriterionDeletedEvent(payload: CriterionDeletedEvent) {
+        console.log(`[Event] Criterion ${payload.criterionId} is deleted. Delete it from categories where it is required...`);
+        const allCategoriesWithCriterion = await this.repo.findWithCriteriaIds([payload.criterionId]);
+
+        const updatePromises = allCategoriesWithCriterion.map(category => {
+            category.requiredCriteriaIds = category.requiredCriteriaIds.filter((id) => id !== payload.criterionId);
+            return this.repo.update(category.id, category);
+        });
+
+        await Promise.all(updatePromises);
     }
 }
