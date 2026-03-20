@@ -7,6 +7,7 @@ import { updateProfile } from '@/src/api/users/users.api';
 import { browserClient } from '@/src/lib/api/browser.client';
 import type { User } from '@/src/api/auth/auth.schemas';
 import { Save, Loader2, Trash2 } from 'lucide-react';
+import { HTTPError } from 'ky';
 
 export default function SettingsPage() {
     const router = useRouter();
@@ -35,8 +36,16 @@ export default function SettingsPage() {
                 setAvatarUrl(u.avatarUrl || '');
                 setGithubUrl(u.githubUrl || '');
                 setLinkedinUrl(u.linkedinUrl || '');
-            } catch {
-                router.push('/login');
+            } catch (error: unknown) {
+                if (error instanceof HTTPError) {
+                    if (error.response.status === 401) {
+                        router.push('/login');
+                    }
+                } else if (error instanceof Error) {
+                    console.error('Error:', error.message);
+                } else {
+                    console.error('Unexpected error:', error);
+                }
             } finally {
                 setLoading(false);
             }
