@@ -95,13 +95,17 @@ export default function Header() {
 
                         {!isLoading &&
                             (isLoggedIn ? (
-                                <button
-                                    onClick={handleLogout}
-                                    className="text-base font-medium transition-colors duration-300 hover:text-gray-400 relative group cursor-pointer"
-                                >
-                                    Logout
-                                    <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gray-400 transition-all duration-300 group-hover:w-full"></span>
-                                </button>
+                                <>
+                                    <NavLink href="/profile">Profile</NavLink>
+
+                                    <button
+                                        onClick={handleLogout}
+                                        className="text-base font-medium transition-colors duration-300 hover:text-gray-400 relative group cursor-pointer"
+                                    >
+                                        Sign Out
+                                        <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gray-400 transition-all duration-300 group-hover:w-full"></span>
+                                    </button>
+                                </>
                             ) : (
                                 <>
                                     <NavLink href="/login">Login</NavLink>
@@ -183,13 +187,26 @@ export default function Header() {
 
                     {!isLoading &&
                         (isLoggedIn ? (
-                            <button
-                                onClick={handleLogout}
-                                className="flex items-center gap-x-3 text-lg font-medium transition-colors px-3 py-3 rounded-lg text-zinc-300 hover:text-zinc-100 hover:bg-zinc-800/50 w-full text-left cursor-pointer"
-                            >
-                                <LogOut size={22} className="text-zinc-400" />
-                                <span>Logout</span>
-                            </button>
+                            <>
+                                <MobileNavLink
+                                    href="/profile"
+                                    onClick={() => setIsMenuOpen(false)}
+                                >
+                                    <User size={22} className="text-zinc-400" />
+                                    <span>Profile</span>
+                                </MobileNavLink>
+
+                                <button
+                                    onClick={handleLogout}
+                                    className="flex items-center gap-x-3 text-lg font-medium transition-colors px-3 py-3 rounded-lg text-zinc-300 hover:text-zinc-100 hover:bg-zinc-800/50 w-full text-left cursor-pointer"
+                                >
+                                    <LogOut
+                                        size={22}
+                                        className="text-zinc-400"
+                                    />
+                                    <span>Sign Out</span>
+                                </button>
+                            </>
                         ) : (
                             <>
                                 <MobileNavLink
