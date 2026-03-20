@@ -17,6 +17,7 @@ import {
 import { usePathname, useRouter } from 'next/navigation';
 import { me, logout } from '@/src/api/auth/auth.api';
 import { browserClient } from '@/src/lib/api/browser.client';
+import { set } from 'zod';
 
 export default function Header() {
     const router = useRouter();
@@ -26,7 +27,7 @@ export default function Header() {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [isAdmin, setIsAdmin] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
-
+    const [userId, setUserId] = useState<string | null>(null);
     useEffect(() => {
         if (isMenuOpen) {
             document.body.style.overflow = 'hidden';
@@ -42,9 +43,11 @@ export default function Header() {
         async function checkAuth() {
             try {
                 const user = await me(browserClient);
+                setUserId(user.id.toString());
                 setIsLoggedIn(true);
                 setIsAdmin(user.role === 'admin');
             } catch {
+                setUserId(null);
                 setIsLoggedIn(false);
                 setIsAdmin(false);
             } finally {
@@ -58,6 +61,7 @@ export default function Header() {
     const handleLogout = async () => {
         try {
             await logout(browserClient);
+            setUserId(null);
             setIsLoggedIn(false);
             setIsAdmin(false);
             setIsMenuOpen(false);
@@ -96,7 +100,9 @@ export default function Header() {
                         {!isLoading &&
                             (isLoggedIn ? (
                                 <>
-                                    <NavLink href="/profile">Profile</NavLink>
+                                    <NavLink href={`/profile/${userId}`}>
+                                        Profile
+                                    </NavLink>
 
                                     <button
                                         onClick={handleLogout}
@@ -189,7 +195,7 @@ export default function Header() {
                         (isLoggedIn ? (
                             <>
                                 <MobileNavLink
-                                    href="/profile"
+                                    href={`/profile/${userId}`}
                                     onClick={() => setIsMenuOpen(false)}
                                 >
                                     <User size={22} className="text-zinc-400" />

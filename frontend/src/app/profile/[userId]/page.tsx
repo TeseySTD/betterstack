@@ -1,43 +1,34 @@
-'use client';
-
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { me } from '@/src/api/auth/auth.api';
-import { browserClient } from '@/src/lib/api/browser.client';
-import type { User } from '@/src/api/auth/auth.schemas';
+import { getUserById } from '@/src/api/users/users.api';
+import { createServerClient } from '@/src/lib/api/server.client'; // Використовуємо серверний клієнт
 import Image from 'next/image';
-import { Mail, Github, Linkedin, Shield, Loader2 } from 'lucide-react';
+import { Mail, Github, Linkedin, Shield, Settings } from 'lucide-react';
 import Link from 'next/link';
+import { notFound } from 'next/navigation';
 
-export default function ProfileOverview() {
-    const router = useRouter();
-    const [user, setUser] = useState<User | null>(null);
-    const [loading, setLoading] = useState(true);
+export default async function ProfileOverview({
+    params,
+}: {
+    params: Promise<{ userId: string }>;
+}) {
+    const userIdObject = await params;
+    const targetUserId = parseInt(userIdObject.userId);
+    const serverClient = await createServerClient();
 
-    useEffect(() => {
-        async function fetchUser() {
-            try {
-                const u = await me(browserClient);
-                setUser(u);
-            } catch (error) {
-                console.error('[PROFILE] 🔴 Failed to fetch user:', error);
-                router.push('/login');
-            } finally {
-                setLoading(false);
-            }
-        }
-        fetchUser();
-    }, [router]);
-
-    if (loading) {
-        return (
-            <div className="flex items-center justify-center py-20">
-                <Loader2 className="w-6 h-6 animate-spin text-zinc-500" />
-            </div>
-        );
+    if (isNaN(targetUserId)) {
+        notFound();
     }
 
-    if (!user) return null;
+    const [user, currentUser] = await Promise.all([
+        getUserById(serverClient, targetUserId).catch(() => null),
+        me(serverClient).catch(() => null),
+    ]);
+
+    if (!user) {
+        notFound();
+    }
+
+    const isOwner = currentUser?.id === user.id;
 
     return (
         <div className="space-y-8">
@@ -56,16 +47,28 @@ export default function ProfileOverview() {
                     </div>
                 )}
 
-                <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-3 mb-1">
-                        <h2 className="text-2xl font-bold text-foreground truncate">
-                            {user.fullName || 'No name set'}
-                        </h2>
-                        {user.role === 'admin' && (
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-medium">
-                                <Shield className="w-3 h-3" />
-                                Admin
-                            </span>
+                <div className="flex-1 min-w-0 w-full">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-1">
+                        <div className="flex items-center gap-3">
+                            <h2 className="text-2xl font-bold text-foreground truncate">
+                                {user.fullName || 'No name set'}
+                            </h2>
+                            {user.role === 'admin' && (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-medium">
+                                    <Shield className="w-3 h-3" />
+                                    Admin
+                                </span>
+                            )}
+                        </div>
+
+                        {isOwner && (
+                            <Link
+                                href={`/profile/${user.id}/settings`}
+                                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-300 text-sm font-medium transition-all"
+                            >
+                                <Settings className="w-4 h-4" />
+                                Edit Profile
+                            </Link>
                         )}
                     </div>
 
@@ -75,7 +78,7 @@ export default function ProfileOverview() {
                         </p>
                     ) : (
                         <p className="text-zinc-600 text-sm mt-2 italic">
-                            No bio yet. Add one in Settings.
+                            No bio yet. {isOwner && 'Add one in Settings.'}
                         </p>
                     )}
                 </div>
@@ -121,12 +124,14 @@ export default function ProfileOverview() {
                     {!user.githubUrl && !user.linkedinUrl && (
                         <p className="text-zinc-600 text-sm italic">
                             No social links added yet.{' '}
-                            <Link
-                                href="/profile/settings"
-                                className="text-zinc-400 hover:text-zinc-200 underline underline-offset-2"
-                            >
-                                Add them in Settings
-                            </Link>
+                            {isOwner && (
+                                <Link
+                                    href={`/profile/${user.id}/settings`}
+                                    className="text-zinc-400 hover:text-zinc-200 underline underline-offset-2"
+                                >
+                                    Add them in Settings
+                                </Link>
+                            )}
                         </p>
                     )}
                 </div>
