@@ -41,30 +41,6 @@ async function seed() {
                 .execute();
             admin = result.generatedMaps[0];
             console.log('Admin user created.');
-        } else {
-            // Update existing admin to ensure they have profile data
-            console.log('[SEED] Updating existing admin user...');
-            await qr.manager
-                .createQueryBuilder()
-                .update('users')
-                .set({
-                    fullName: 'Tesey',
-                    bio: 'Full-stack developer and BetterStack maintainer.',
-                    githubUrl: 'https://github.com/TeseySTD',
-                    avatarUrl: 'https://github.com/TeseySTD.png',
-                })
-                .where('email = :email', { email: adminEmail })
-                .execute();
-            console.log('[SEED] Admin user updated.');
-            // Reload admin user with updated data
-            admin = await qr.manager.findOneBy('users', { email: adminEmail });
-            console.log('[SEED] ✅ Admin user after update:', {
-                id: admin.id,
-                email: admin.email,
-                fullName: admin.fullName,
-                bio: admin.bio,
-                avatarUrl: admin.avatarUrl,
-            });
         }
 
         // ------------------------------------------------------------------ //
@@ -677,15 +653,6 @@ async function fetchUserData(userId) {
                     .returning('*')
                     .execute();
                 sw = result.generatedMaps[0];
-            } else {
-                // Update existing software to have correct authorId
-                await qr.manager
-                    .createQueryBuilder()
-                    .update('software')
-                    .set({ authorId: admin.id })
-                    .where('slug = :slug', { slug: row.slug })
-                    .execute();
-                sw = await qr.manager.findOneBy('software', { slug: row.slug });
             }
             softwareItems.push(sw);
         }
