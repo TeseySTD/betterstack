@@ -10,6 +10,7 @@ export default function ProfileSidebar() {
 
     const navItems = [
         {
+            // Тут основна інфа відображається
             name: 'Overview',
             href: '/profile',
             icon: <User className="w-5 h-5" />,
@@ -21,6 +22,7 @@ export default function ProfileSidebar() {
             icon: <Layers className="w-5 h-5" />,
         },
         {
+            // Ну тут здається щоьс по типу редагування аккаунта та думаю кнопку видалити аккаунт зробити (якщо логіки нема то роби тільки UI)
             name: 'Settings',
             href: '/profile/settings',
             icon: <Settings className="w-5 h-5" />,
@@ -55,8 +57,9 @@ export default function ProfileSidebar() {
 
                 <div className="h-px w-full bg-zinc-200 dark:bg-zinc-800 my-4" />
 
-                <button className="flex items-center gap-3 px-4 py-3 rounded-xl text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800/30 transition-colors font-medium w-full text-left group">
-                    <span className="text-zinc-400/80 group-hover:text-zinc-500 transition-colors">
+                {/* Зроби логіку виходу з акка так же як і в хедері */}
+                <button className="flex items-center gap-3 px-4 py-3 rounded-xl text-zinc-400 dark::text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors font-medium w-full text-left group">
+                    <span className="text-zinc-400 dark:text-zinc-100 group-hover:text-foreground transition-colors">
                         <LogOut className="w-5 h-5" />
                     </span>
                     Sign Out
