@@ -27,6 +27,14 @@ export const SoftwareMetricEntrySchema = z.object({
 });
 export type SoftwareMetricEntry = z.infer<typeof SoftwareMetricEntrySchema>;
 
+export const SoftwareAuthorSchema = z.object({
+    id: z.number(),
+    fullName: z.string().nullable().optional(),
+    avatarUrl: z.string().nullable().optional(),
+    bio: z.string().nullable().optional(),
+});
+export type SoftwareAuthor = z.infer<typeof SoftwareAuthorSchema>;
+
 export const SoftwareDetailSchema = z.object({
     id: z.number(),
     slug: z.string(),
@@ -42,7 +50,7 @@ export const SoftwareDetailSchema = z.object({
     createdAt: z.string(),
     updatedAt: z.string(),
     categories: z.array(CategoryListItemSchema),
-    author: UserSchema,
+    author: SoftwareAuthorSchema,
     factors: z.object({
         positive: z.array(SoftwareFactorEntrySchema),
         negative: z.array(SoftwareFactorEntrySchema),

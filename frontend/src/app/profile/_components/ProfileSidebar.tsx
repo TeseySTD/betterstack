@@ -1,12 +1,25 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { User, Layers, Settings, LogOut } from 'lucide-react';
+import { logout } from '@/src/api/auth/auth.api';
+import { browserClient } from '@/src/lib/api/browser.client';
 import React from 'react';
 
 export default function ProfileSidebar() {
     const pathname = usePathname();
+    const router = useRouter();
+
+    const handleLogout = async () => {
+        try {
+            await logout(browserClient);
+            router.push('/');
+            router.refresh();
+        } catch (err) {
+            console.error('Logout failed:', err);
+        }
+    };
 
     const navItems = [
         {
@@ -58,7 +71,10 @@ export default function ProfileSidebar() {
                 <div className="h-px w-full bg-zinc-200 dark:bg-zinc-800 my-4" />
 
                 {/* Зроби логіку виходу з акка так же як і в хедері */}
-                <button className="flex items-center gap-3 px-4 py-3 rounded-xl text-zinc-400 dark::text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors font-medium w-full text-left group">
+                <button
+                    onClick={handleLogout}
+                    className="flex items-center gap-3 px-4 py-3 rounded-xl text-zinc-400 dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors font-medium w-full text-left group"
+                >
                     <span className="text-zinc-400 dark:text-zinc-100 group-hover:text-foreground transition-colors">
                         <LogOut className="w-5 h-5" />
                     </span>

@@ -22,6 +22,7 @@ import {
 import { User } from './entities/user.entity';
 import { SoftwareUsage } from './entities/software-usage.entity';
 import { RegisterDto, LoginDto } from './dto/auth.dto';
+import { UpdateProfileDto } from './dto/update-profile.dto';
 import { UserDto } from './dto/user.dto';
 import { adminConfig, type AdminConfig } from '@config/admin.config';
 import type { PaginationQueryDto } from '@common/dto/pagination-query.dto';
@@ -168,11 +169,51 @@ export class UsersService implements OnModuleInit {
         return { isUsed };
     }
 
+    async updateProfile(
+        userId: number,
+        dto: UpdateProfileDto,
+    ): Promise<UserDto> {
+        console.log('[USERS SERVICE] updateProfile called for userId:', userId);
+        console.log('[USERS SERVICE] updateProfile DTO:', dto);
+
+        const user = await this.userRepo.findOneBy({ id: userId });
+        if (!user)
+            throw new NotFoundException(`User with ID ${userId} not found`);
+
+        if (dto.fullName !== undefined) user.fullName = dto.fullName;
+        if (dto.bio !== undefined) user.bio = dto.bio;
+        if (dto.avatarUrl !== undefined) user.avatarUrl = dto.avatarUrl;
+        if (dto.githubUrl !== undefined) user.githubUrl = dto.githubUrl;
+        if (dto.linkedinUrl !== undefined) user.linkedinUrl = dto.linkedinUrl;
+
+        const updated = await this.userRepo.save(user);
+        console.log('[USERS SERVICE] updateProfile saved user:', {
+            id: updated.id,
+            fullName: updated.fullName,
+            bio: updated.bio,
+            avatarUrl: updated.avatarUrl,
+        });
+        return UserDto.from(updated);
+    }
+
+    async getUserSoftwareStack(userId: number): Promise<SoftwareUsage[]> {
+        return this.usageRepo.find({
+            where: { userId },
+            relations: ['software', 'software.categories'],
+            order: { createdAt: 'DESC' },
+        });
+    }
+
     private buildAuthResult(user: User): AuthResult {
         const token = this.jwtService.sign({
             id: user.id,
             email: user.email,
             role: user.role,
+            fullName: user.fullName,
+            bio: user.bio,
+            avatarUrl: user.avatarUrl,
+            githubUrl: user.githubUrl,
+            linkedinUrl: user.linkedinUrl,
         });
         return { token, user: UserDto.from(user) };
     }

@@ -61,6 +61,14 @@ export default async function SoftwareArticlePage({
     let software;
     try {
         software = await getSoftwareBySlug(client, slugObject.slug);
+        console.log('[ARTICLE PAGE] ✅ Software loaded:', {
+            name: software.name,
+            slug: software.slug,
+            authorId: software.author?.id,
+            authorFullName: software.author?.fullName,
+            authorBio: software.author?.bio,
+            authorAvatarUrl: software.author?.avatarUrl,
+        });
     } catch (err) {
         if (err instanceof HTTPError && err.response.status === 404) notFound();
         throw err;
@@ -226,6 +234,46 @@ export default async function SoftwareArticlePage({
                 softwareName={software.name}
                 factors={software.factors}
             />
+
+            {/* Author Byline */}
+            {software.author && (
+                <section className="my-8 sm:my-12 p-5 sm:p-6 rounded-2xl border border-zinc-800 bg-zinc-900/50">
+                    <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-500 mb-4">
+                        Written by
+                    </h3>
+                    {console.log('[ARTICLE] 🖼️ RENDERING AUTHOR:', {
+                        fullName: software.author.fullName,
+                        bio: software.author.bio,
+                        avatarUrl: software.author.avatarUrl,
+                    })}
+                    <div className="flex items-center gap-4">
+                        {software.author.avatarUrl ? (
+                            <Image
+                                src={software.author.avatarUrl}
+                                alt={software.author.fullName || 'Author'}
+                                width={48}
+                                height={48}
+                                className="rounded-xl object-cover w-12 h-12 border border-zinc-700"
+                            />
+                        ) : (
+                            <div className="w-12 h-12 rounded-xl bg-zinc-800 border border-zinc-700 flex items-center justify-center text-zinc-500 text-lg font-bold">
+                                {(software.author.fullName ||
+                                    '?')[0].toUpperCase()}
+                            </div>
+                        )}
+                        <div className="min-w-0">
+                            <p className="font-semibold text-foreground truncate">
+                                {software.author.fullName || 'Anonymous'}
+                            </p>
+                            {software.author.bio && (
+                                <p className="text-sm text-zinc-400 line-clamp-1">
+                                    {software.author.bio}
+                                </p>
+                            )}
+                        </div>
+                    </div>
+                </section>
+            )}
 
             <SoftwareAlternatives
                 slug={software.slug}

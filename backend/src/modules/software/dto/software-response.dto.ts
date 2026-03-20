@@ -3,8 +3,8 @@ export class SoftwareAuthorDto {
     @ApiProperty()
     id: number;
 
-    @ApiProperty()
-    fullName: string;
+    @ApiPropertyOptional()
+    fullName: string | null;
 
     @ApiPropertyOptional()
     avatarUrl: string | null;

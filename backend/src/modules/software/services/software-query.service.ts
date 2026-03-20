@@ -147,6 +147,21 @@ export class SoftwareQueryService {
                 'author',
             ],
         });
+
+        if (sw?.author) {
+            console.log('[SOFTWARE QUERY] 🔍 AUTHOR RAW OBJECT:');
+            console.log(sw.author);
+            console.log(
+                '[SOFTWARE QUERY] AUTHOR KEYS:',
+                Object.keys(sw.author),
+            );
+            console.log('[SOFTWARE QUERY] id:', sw.author.id);
+            console.log('[SOFTWARE QUERY] email:', sw.author.email);
+            console.log('[SOFTWARE QUERY] fullName:', sw.author.fullName);
+            console.log('[SOFTWARE QUERY] bio:', sw.author.bio);
+            console.log('[SOFTWARE QUERY] avatarUrl:', sw.author.avatarUrl);
+        }
+
         if (!sw)
             throw new NotFoundException(
                 `Software with slug '${slug}' not found`,
@@ -161,7 +176,7 @@ export class SoftwareQueryService {
             }),
         );
 
-        return {
+        const result = {
             id: sw.id,
             slug: sw.slug,
             name: sw.name,
@@ -180,15 +195,29 @@ export class SoftwareQueryService {
                 slug: c.slug,
                 name: c.name,
             })),
-            author: {
-                id: sw.author.id,
-                fullName: sw.author.fullName,
-                avatarUrl: sw.author.avatarUrl,
-                bio: sw.author.bio,
-            },
+            author: sw.author
+                ? {
+                      id: sw.author.id,
+                      fullName: sw.author.fullName || null,
+                      avatarUrl: sw.author.avatarUrl || null,
+                      bio: sw.author.bio || null,
+                  }
+                : {
+                      id: 0,
+                      fullName: 'Anonymous',
+                      avatarUrl: null,
+                      bio: null,
+                  },
             factors: this.groupFactors(sw.softwareFactors ?? []),
             metrics,
         };
+
+        console.log('[SOFTWARE QUERY] ✅ RETURNING AUTHOR FOR SLUG:', {
+            slug: sw.slug,
+            author: result.author,
+        });
+
+        return result;
     }
 
     async compareBySlug(

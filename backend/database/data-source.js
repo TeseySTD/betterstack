@@ -11,7 +11,7 @@ const dataSource = new DataSource({
     database: process.env.POSTGRES_DB,
 
     entities: [path.join(__dirname, '..', 'dist', '**', '*.entity.js')],
-    migrations: [path.join(__dirname, '..', 'dist', 'database', 'migrations', '*.js')],
+    migrations: [path.join(__dirname, 'migrations', '*.js')],
 
     synchronize: false,
 });

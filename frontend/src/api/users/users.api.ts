@@ -6,7 +6,15 @@ import {
 } from '../common/common.utils';
 import { type User, UserSchema } from '../auth/auth.schemas';
 import type { Paginated, PaginationQuery } from '../common/common.types';
-import { IsUsedResponseSchema, type IsUsedResponse } from './users.schemas';
+import {
+    IsUsedResponseSchema,
+    type IsUsedResponse,
+    type UpdateProfileInput,
+} from './users.schemas';
+import {
+    SoftwareListItemSchema,
+    type SoftwareListItem,
+} from '../software/software.schemas';
 
 export async function listUsers(
     client: KyInstance,
@@ -61,4 +69,19 @@ export async function hasUserUsedSoftware(
         .get(`users/software/has-used/${softwareId}`)
         .json();
     return unwrapResponse(IsUsedResponseSchema, raw);
+}
+
+export async function updateProfile(
+    client: KyInstance,
+    input: UpdateProfileInput,
+): Promise<User> {
+    const raw = await client.patch('users/me', { json: input }).json();
+    return unwrapResponse(UserSchema, raw);
+}
+
+export async function getMyStack(
+    client: KyInstance,
+): Promise<SoftwareListItem[]> {
+    const raw = await client.get('users/me/software').json();
+    return unwrapResponse(SoftwareListItemSchema.array(), raw);
 }

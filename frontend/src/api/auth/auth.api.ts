@@ -30,6 +30,8 @@ export async function logout(client: KyInstance): Promise<void> {
 }
 
 export async function me(client: KyInstance): Promise<User> {
-    const raw = await client.get('auth/me').json();
+    // Add timestamp to bypass any caching
+    const timestamp = Date.now();
+    const raw = await client.get(`auth/me?t=${timestamp}`).json();
     return unwrapResponse(UserSchema, raw);
 }
